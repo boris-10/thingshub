@@ -16,4 +16,8 @@ describe('AuthController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
+
+  describe('register', () => undefined);
+
+  describe('login', () => undefined);
 });
