@@ -1,24 +1,37 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
+import * as Joi from 'joi';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { Environment } from './common/constants';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       cache: true,
       load: [appConfig, databaseConfig],
+      validationSchema: Joi.object({
+        APP_ENV: Joi.string().default(Environment.Development),
+        APP_NAME: Joi.string().default('ThingsHub'),
+        APP_PORT: Joi.string().default(3000),
+        DATABASE_HOST: Joi.string().default('localhost'),
+        DATABASE_PORT: Joi.number().default(5432),
+        DATABASE_NAME: Joi.string().required(),
+        DATABASE_USER: Joi.string().required(),
+        DATABASE_PASSWORD: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
+        JTW_EXPIRATION_TIME: Joi.string().required(),
+      }),
     }),
-    AuthModule,
-    UsersModule,
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule.forFeature(databaseConfig)],
+      imports: [ConfigModule],
       inject: [databaseConfig.KEY],
       useFactory: (database: ConfigType<typeof databaseConfig>) => ({
         type: database.driver as 'postgres',
@@ -31,6 +44,8 @@ import databaseConfig from './config/database.config';
         synchronize: true, // 👈 your entities will be synced with the database (ORM will map entity definitions to corresponding SQL tabled), every time you run the application (recommended: disable in the production)
       }),
     }),
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

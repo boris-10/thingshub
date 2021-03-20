@@ -5,14 +5,14 @@ import { Repository } from 'typeorm';
 
 import { RegisterDto } from './dto/register.dto';
 import { User } from '../users/entities/user.entity';
-import jwtConfig from 'src/config/jwt.config';
+import jwtConfiguration from 'src/config/jwt.config';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
-    @Inject(jwtConfig.KEY)
-    private readonly jwt: ConfigType<typeof jwtConfig>,
+    @Inject(jwtConfiguration.KEY)
+    private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
   ) {}
 
   async register({ email, password }: RegisterDto) {

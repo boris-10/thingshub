@@ -1,4 +1,5 @@
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { ConfigService, ConfigType } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import {
   DocumentBuilder,
@@ -8,6 +9,7 @@ import {
 import { ValidationError } from 'class-validator';
 
 import { AppModule } from './app.module';
+import applicationConfig from './config/app.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -40,6 +42,11 @@ async function bootstrap() {
   );
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  await app.listen(3000);
+  // App configuration
+  const configService = app.get<ConfigService>(ConfigService);
+  const appConfig = configService.get<ConfigType<typeof applicationConfig>>(
+    'APP_CONFIG',
+  );
+  await app.listen(appConfig.port);
 }
 bootstrap();
