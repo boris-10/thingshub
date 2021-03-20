@@ -13,9 +13,7 @@ export class AuthService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
     @Inject(jwtConfig.KEY)
     private readonly jwt: ConfigType<typeof jwtConfig>,
-  ) {
-    console.log(jwt.secret);
-  }
+  ) {}
 
   async register({ email, password }: RegisterDto) {
     return { email, password };
