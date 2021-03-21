@@ -15,7 +15,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
 
-  // Pipes
+  // ---- Pipes ----
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -24,7 +24,7 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger
+  // ---- Swagger ----
   const swaggerConfig = new DocumentBuilder()
     .setTitle('ThingsHub')
     .setDescription('All things in one place')
@@ -42,7 +42,7 @@ async function bootstrap() {
   );
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  // App configuration
+  // ---- Config ----
   const configService = app.get<ConfigService>(ConfigService);
   const appConfig = configService.get<ConfigType<typeof applicationConfig>>(
     'APP_CONFIG',

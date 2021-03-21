@@ -13,6 +13,7 @@ import databaseConfig from './config/database.config';
 
 @Module({
   imports: [
+    // ---- Config ----
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
@@ -30,6 +31,7 @@ import databaseConfig from './config/database.config';
         JTW_EXPIRATION_TIME: Joi.string().required(),
       }),
     }),
+    // ---- TypeOrm ----
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [databaseConfig.KEY],
