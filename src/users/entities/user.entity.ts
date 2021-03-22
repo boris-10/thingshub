@@ -18,16 +18,11 @@ export class User {
   email: string;
 
   @Exclude({ toPlainOnly: true })
-  @Column({
-    select: false,
-  })
+  @Column()
   password: string;
 
   @Exclude({ toPlainOnly: true })
-  @Column({
-    select: false,
-    nullable: true,
-  })
+  @Column({ nullable: true })
   refreshToken: string;
 
   @CreateDateColumn()

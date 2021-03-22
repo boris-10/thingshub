@@ -3,7 +3,7 @@ import {
   ConflictException,
   Injectable,
 } from '@nestjs/common';
-import { hash } from 'bcrypt';
+import { hash, compare } from 'bcrypt';
 
 import { RegisterDto } from './dto/register.dto';
 import { UsersService } from '../users/users.service';
@@ -23,10 +23,24 @@ export class AuthService {
       });
       return user;
     } catch (error) {
+      console.log(error);
       if (error?.code === PostgresErrorCode.UniqueViolation) {
         throw new ConflictException('User with that email already exists');
       }
       throw new BadRequestException();
+    }
+  }
+
+  async validateUser(email: string, password: string): Promise<User> {
+    try {
+      const user = await this.usersService.findByEmail(email);
+      const isPasswordMatching = await compare(password, user.password);
+      if (!isPasswordMatching) {
+        throw new BadRequestException('Wrong credentials provided');
+      }
+      return user;
+    } catch (error) {
+      throw new BadRequestException('Wrong credentials provided');
     }
   }
 }

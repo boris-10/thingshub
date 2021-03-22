@@ -17,4 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: jwtConfig.secret,
     });
   }
+
+  async validate(): Promise<any> {}
 }
