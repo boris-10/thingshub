@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './strategies/local.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
 import jwtConfiguration from '../config/jwt.config';
@@ -14,6 +15,7 @@ import jwtConfiguration from '../config/jwt.config';
   imports: [
     UsersModule,
     TypeOrmModule.forFeature([User]),
+    ConfigModule.forFeature(jwtConfiguration),
     // ---- JWT Config ----
     JwtModule.registerAsync({
       imports: [ConfigModule.forFeature(jwtConfiguration)],
@@ -27,7 +29,7 @@ import jwtConfiguration from '../config/jwt.config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

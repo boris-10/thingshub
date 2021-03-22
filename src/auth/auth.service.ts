@@ -9,10 +9,14 @@ import { RegisterDto } from './dto/register.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { PostgresErrorCode } from '../common/constants';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async register({ email, password }: RegisterDto): Promise<User> {
     const hashedPassword = await hash(password, 10);
@@ -23,12 +27,15 @@ export class AuthService {
       });
       return user;
     } catch (error) {
-      console.log(error);
       if (error?.code === PostgresErrorCode.UniqueViolation) {
         throw new ConflictException('User with that email already exists');
       }
       throw new BadRequestException();
     }
+  }
+
+  async login(email: string) {
+    return this.jwtService.sign({ email });
   }
 
   async validateUser(email: string, password: string): Promise<User> {

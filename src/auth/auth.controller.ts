@@ -24,12 +24,15 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@UserFromReq() user: User) {
+  async login(@UserFromReq() user: User) {
+    const { email } = user;
+    const token = await this.authService.login(email);
+    console.log(token);
     return user;
   }
 
   @Post('register')
-  register(@Body() registerDto: RegisterDto) {
+  register(@Body() registerDto: RegisterDto): Promise<User> {
     return this.authService.register(registerDto);
   }
 }
