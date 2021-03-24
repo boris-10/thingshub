@@ -7,9 +7,10 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 import { TokenDto } from './dto/token.dto';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -22,8 +23,9 @@ import { User } from '../users/entities/user.entity';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @HttpCode(200)
+  @ApiBody({ type: LoginDto })
   @UseGuards(LocalAuthGuard)
+  @HttpCode(200)
   @Post('login')
   login(@CurrentUser() user: User): Promise<TokenDto> {
     return this.authService.login(user);

@@ -29,10 +29,11 @@ async function bootstrap() {
     .setTitle('ThingsHub')
     .setDescription('All things in one place')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const swaggerOptions: SwaggerDocumentOptions = {
-    ignoreGlobalPrefix: true,
+    ignoreGlobalPrefix: false,
   };
 
   const document = SwaggerModule.createDocument(
