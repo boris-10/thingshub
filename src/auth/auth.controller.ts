@@ -13,7 +13,7 @@ import { RegisterDto } from './dto/register.dto';
 import { TokenDto } from './dto/token.dto';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { UserFromReq } from '../common/decorators/user-from-req.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 
 @ApiTags('auth')
@@ -25,7 +25,7 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  login(@UserFromReq() user: User): Promise<TokenDto> {
+  login(@CurrentUser() user: User): Promise<TokenDto> {
     return this.authService.login(user);
   }
 
