@@ -14,6 +14,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserFromReq } from '../common/decorators/user-from-req.decorator';
 import { User } from '../users/entities/user.entity';
+import { LoginResponse } from './interfaces/login-response.interface';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -24,11 +25,8 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@UserFromReq() user: User) {
-    const { email } = user;
-    const token = await this.authService.login(email);
-    console.log(token);
-    return user;
+  async login(@UserFromReq() user: User): Promise<LoginResponse> {
+    return this.authService.login(user);
   }
 
   @Post('register')

@@ -11,6 +11,11 @@ export class UsersService {
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
   ) {}
 
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const user = await this.usersRepository.create(createUserDto);
+    return this.usersRepository.save(user);
+  }
+
   async findByEmail(email: string): Promise<User> {
     const user = this.usersRepository.findOne({ email });
     if (user) {
@@ -19,8 +24,12 @@ export class UsersService {
     throw new NotFoundException('User with this email does not exists');
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = await this.usersRepository.create(createUserDto);
-    return this.usersRepository.save(user);
+  async updateByEmail<K extends keyof User, V = User[K]>(
+    email: string,
+    key: K,
+    value: V,
+  ): Promise<User> {
+    await this.usersRepository.update({ email }, { [key]: value });
+    return this.findByEmail(email);
   }
 }
