@@ -1,22 +1,27 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
 import { RegisterDto } from './dto/register.dto';
-import { LoginResponse } from './interfaces/login-response.interface';
+import { TokenDto } from './dto/token.dto';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { PostgresErrorCode } from '../common/constants';
+import jwtConfiguration from 'src/config/jwt.config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    @Inject(jwtConfiguration.KEY)
+    private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
   ) {}
 
   async register({ email, password }: RegisterDto): Promise<User> {
@@ -35,16 +40,13 @@ export class AuthService {
     }
   }
 
-  async login({ email }: User): Promise<LoginResponse> {
-    const accessToken = await this.createAccessToken(email);
-    const refreshToken = await this.createRefreshToken(email);
-    const user = await this.usersService.updateByEmail(
-      email,
-      'refreshToken',
-      refreshToken,
-    );
+  async login(user: User): Promise<TokenDto> {
+    const { id, email } = user;
+    const accessToken = await this.createAccessToken(id, email);
+    const refreshToken = await this.createRefreshToken(id, email);
+    await this.usersService.updateById(id, 'refreshToken', refreshToken);
 
-    return { user, accessToken, refreshToken };
+    return TokenDto.from({ accessToken, refreshToken });
   }
 
   async validateUser(email: string, password: string): Promise<User> {
@@ -60,15 +62,16 @@ export class AuthService {
     }
   }
 
-  private async createAccessToken(email: string): Promise<string> {
-    return this.jwtService.signAsync({ email });
+  private async createAccessToken(id: number, email: string): Promise<string> {
+    return this.jwtService.signAsync({ sub: id, email });
   }
 
-  private async createRefreshToken(email: string): Promise<string> {
+  private async createRefreshToken(id: number, email: string): Promise<string> {
     return this.jwtService.signAsync(
-      { email },
+      { sub: id, email },
       {
-        expiresIn: '7d',
+        secret: this.jwtConfig.refreshTokenSecret,
+        expiresIn: this.jwtConfig.refreshTokenExpirationTime,
       },
     );
   }

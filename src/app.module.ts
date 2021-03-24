@@ -27,8 +27,10 @@ import databaseConfig from './config/database.config';
         DATABASE_NAME: Joi.string().required(),
         DATABASE_USER: Joi.string().required(),
         DATABASE_PASSWORD: Joi.string().required(),
-        JWT_SECRET: Joi.string().required(),
-        JTW_EXPIRATION_TIME: Joi.string().required(),
+        ACCESS_TOKEN_SECRET: Joi.string().required(),
+        ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        REFRESH_TOKEN_SECRET: Joi.string().required(),
+        REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
       }),
     }),
     // ---- TypeOrm ----

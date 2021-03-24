@@ -21,9 +21,9 @@ import jwtConfiguration from '../config/jwt.config';
       imports: [ConfigModule.forFeature(jwtConfiguration)],
       inject: [jwtConfiguration.KEY],
       useFactory: async (jwtConfig: ConfigType<typeof jwtConfiguration>) => ({
-        secret: jwtConfig.secret,
+        secret: jwtConfig.accessTokenSecret,
         signOptions: {
-          expiresIn: jwtConfig.expirationTime,
+          expiresIn: jwtConfig.accessTokenExpirationTime,
         },
       }),
     }),
