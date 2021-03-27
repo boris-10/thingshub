@@ -7,7 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -37,9 +37,14 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  @ApiParam({
-    name: 'refresh token',
-    required: true,
+  @ApiBody({
+    schema: {
+      properties: {
+        refreshToken: {
+          type: 'string',
+        },
+      },
+    },
   })
   @UseGuards(JwtRefreshGuard)
   @Post('refresh-token')
