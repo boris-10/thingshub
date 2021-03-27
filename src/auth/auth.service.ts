@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -24,6 +25,7 @@ export class AuthService {
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
   ) {}
 
+  /* TODO: send email to confirm registration process */
   async register({ email, password }: RegisterDto): Promise<User> {
     const hashedPassword = await hash(password, 10);
     try {
@@ -49,6 +51,15 @@ export class AuthService {
     return TokenDto.from({ accessToken, refreshToken });
   }
 
+  async refreshToken(user: User): Promise<TokenDto> {
+    const { id, email } = user;
+    const accessToken = await this.createAccessToken(id, email);
+    const refreshToken = await this.createRefreshToken(id, email);
+    await this.usersService.updateById(id, 'refreshToken', refreshToken);
+
+    return TokenDto.from({ accessToken, refreshToken });
+  }
+
   async validateUser(email: string, password: string): Promise<User> {
     try {
       const user = await this.usersService.findByEmail(email);
@@ -60,6 +71,14 @@ export class AuthService {
     } catch (error) {
       throw new BadRequestException('Wrong credentials provided');
     }
+  }
+
+  async validateRefreshToken(refreshToken: string, id: number): Promise<User> {
+    const user = await this.usersService.findById(id);
+    if (refreshToken === user.refreshToken) {
+      return user;
+    }
+    throw new UnauthorizedException();
   }
 
   private async createAccessToken(id: number, email: string): Promise<string> {
