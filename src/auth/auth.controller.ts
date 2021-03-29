@@ -9,14 +9,12 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { TokenDto } from './dto/token.dto';
+import { CurrentUser } from '@common/decorators';
+import { User } from '@users';
+
+import { RegisterDto, LoginDto, TokenDto } from './dto';
+import { LocalAuthGuard, JwtRefreshGuard } from './guards';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { User } from '../users/entities/user.entity';
 
 @ApiTags('auth')
 @Controller('auth')

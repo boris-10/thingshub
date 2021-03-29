@@ -8,8 +8,10 @@ import {
 } from '@nestjs/swagger';
 import { ValidationError } from 'class-validator';
 
+import { appConfiguration } from '@config';
+import { APP_CONFIG } from '@common/constants';
+
 import { AppModule } from './app.module';
-import applicationConfig from './config/app.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -45,8 +47,8 @@ async function bootstrap() {
 
   // ---- Config ----
   const configService = app.get<ConfigService>(ConfigService);
-  const appConfig = configService.get<ConfigType<typeof applicationConfig>>(
-    'APP_CONFIG',
+  const appConfig = configService.get<ConfigType<typeof appConfiguration>>(
+    APP_CONFIG,
   );
   await app.listen(appConfig.port);
 }

@@ -3,14 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 
+import { jwtConfiguration } from '@config';
+import { User, UsersModule } from '@users';
+
+import { LocalStrategy, JwtStrategy, JwtRefreshStrategy } from './strategies';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { LocalStrategy } from './strategies/local.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtRefreshStrategy } from './strategies/jwt-refresh';
-import { User } from '../users/entities/user.entity';
-import { UsersModule } from '../users/users.module';
-import jwtConfiguration from '../config/jwt.config';
 
 @Module({
   imports: [

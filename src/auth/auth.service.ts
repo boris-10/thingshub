@@ -9,12 +9,11 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
-import { RegisterDto } from './dto/register.dto';
-import { TokenDto } from './dto/token.dto';
-import { UsersService } from '../users/users.service';
-import { User } from '../users/entities/user.entity';
-import { PostgresErrorCode } from '../common/constants';
-import jwtConfiguration from 'src/config/jwt.config';
+import { jwtConfiguration } from '@config';
+import { PostgresErrorCode } from '@common/constants';
+import { User, UsersService } from '@users';
+
+import { RegisterDto, TokenDto } from './dto';
 
 @Injectable()
 export class AuthService {

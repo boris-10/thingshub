@@ -3,13 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import * as Joi from 'joi';
 
+import { appConfiguration, databaseConfiguration } from '@config';
+import { Environment } from '@common/constants';
+import { AuthModule } from '@auth';
+import { UsersModule } from '@users';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
-import { Environment } from './common/constants';
-import appConfig from './config/app.config';
-import databaseConfig from './config/database.config';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import databaseConfig from './config/database.config';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: [appConfig, databaseConfig],
+      load: [appConfiguration, databaseConfiguration],
       validationSchema: Joi.object({
         APP_ENV: Joi.string().default(Environment.Development),
         APP_NAME: Joi.string().default('ThingsHub'),
@@ -36,8 +36,8 @@ import databaseConfig from './config/database.config';
     // ---- TypeOrm ----
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [databaseConfig.KEY],
-      useFactory: (database: ConfigType<typeof databaseConfig>) => ({
+      inject: [databaseConfiguration.KEY],
+      useFactory: (database: ConfigType<typeof databaseConfiguration>) => ({
         type: database.driver as 'postgres',
         host: database.host,
         port: +database.port,
