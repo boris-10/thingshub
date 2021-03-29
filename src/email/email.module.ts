@@ -6,7 +6,7 @@ import { EmailModuleOptions } from './interfaces/email-module-options.interface'
 
 @Module({})
 export class EmailModule {
-  static forRoot(emailModuleOptions: EmailModuleOptions): DynamicModule {
+  static forFeature(emailModuleOptions: EmailModuleOptions): DynamicModule {
     const { imports, useFactory, inject } = emailModuleOptions;
 
     return {

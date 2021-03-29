@@ -3,8 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 
-import { jwtConfiguration } from '@config';
+import { emailConfiguration, jwtConfiguration } from '@config';
 import { User, UsersModule } from '@users';
+import { EmailModule } from '@email';
 
 import { LocalStrategy, JwtStrategy, JwtRefreshStrategy } from './strategies';
 import { AuthController } from './auth.controller';
@@ -24,6 +25,16 @@ import { AuthService } from './auth.service';
         signOptions: {
           expiresIn: jwtConfig.accessTokenExpirationTime,
         },
+      }),
+    }),
+    // ---- Email ----
+    EmailModule.forFeature({
+      imports: [ConfigModule.forFeature(emailConfiguration)],
+      inject: [emailConfiguration.KEY],
+      useFactory: (email: ConfigType<typeof emailConfiguration>) => ({
+        service: email.service,
+        user: email.user,
+        password: email.password,
       }),
     }),
   ],

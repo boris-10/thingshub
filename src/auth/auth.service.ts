@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
@@ -12,6 +13,7 @@ import { hash, compare } from 'bcrypt';
 import { jwtConfiguration } from '@config';
 import { PostgresErrorCode } from '@common/constants';
 import { User, UsersService } from '@users';
+import { EmailService } from '@email';
 
 import { RegisterDto, ResetPasswordDto, TokenDto } from './dto';
 
@@ -22,6 +24,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(jwtConfiguration.KEY)
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
+    private readonly emailService: EmailService,
   ) {}
 
   async register({ email, password }: RegisterDto): Promise<User> {
@@ -56,7 +59,15 @@ export class AuthService {
 
   async resetPassword({ email }: ResetPasswordDto): Promise<void> {
     await this.usersService.findByEmail(email);
-    /* TODO: send email */
+    try {
+      await this.emailService.sendEmail({
+        to: email,
+        subject: 'Reset password',
+        text: 'Use this link to reset the password',
+      });
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 
   async refreshToken(user: User): Promise<TokenDto> {
