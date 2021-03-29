@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -37,7 +41,11 @@ export class UsersService {
     key: K,
     value: V,
   ): Promise<User> {
-    await this.usersRepository.update({ id }, { [key]: value });
-    return this.findById(id);
+    try {
+      await this.usersRepository.update({ id }, { [key]: value });
+      return this.findById(id);
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 }

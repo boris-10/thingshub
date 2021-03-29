@@ -13,7 +13,7 @@ import { CurrentUser } from '@common/decorators';
 import { User } from '@users';
 
 import { RegisterDto, LoginDto, TokenDto } from './dto';
-import { LocalAuthGuard, JwtRefreshGuard } from './guards';
+import { LocalAuthGuard, JwtRefreshGuard, JwtAuthGuard } from './guards';
 import { AuthService } from './auth.service';
 
 @ApiTags('auth')
@@ -21,6 +21,11 @@ import { AuthService } from './auth.service';
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  register(@Body() registerDto: RegisterDto): Promise<User> {
+    return this.authService.register(registerDto);
+  }
 
   @ApiBody({ type: LoginDto })
   @UseGuards(LocalAuthGuard)
@@ -30,10 +35,14 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @Post('register')
-  register(@Body() registerDto: RegisterDto): Promise<User> {
-    return this.authService.register(registerDto);
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
+  @Post('logout')
+  async logout(@CurrentUser() user: User): Promise<void> {
+    return this.authService.logout(user);
   }
+
+  /* TODO: add reset password */
 
   @ApiBody({
     schema: {
@@ -45,6 +54,7 @@ export class AuthController {
     },
   })
   @UseGuards(JwtRefreshGuard)
+  @HttpCode(200)
   @Post('refresh-token')
   async refreshToken(@CurrentUser() user: User): Promise<TokenDto> {
     return this.authService.refreshToken(user);

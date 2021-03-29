@@ -24,7 +24,6 @@ export class AuthService {
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
   ) {}
 
-  /* TODO: send email to confirm registration process */
   async register({ email, password }: RegisterDto): Promise<User> {
     const hashedPassword = await hash(password, 10);
     try {
@@ -48,6 +47,11 @@ export class AuthService {
     await this.usersService.updateById(id, 'refreshToken', refreshToken);
 
     return TokenDto.from({ accessToken, refreshToken });
+  }
+
+  async logout(user: User): Promise<void> {
+    const { id } = user;
+    await this.usersService.updateById(id, 'refreshToken', null);
   }
 
   async refreshToken(user: User): Promise<TokenDto> {
