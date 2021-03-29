@@ -14,6 +14,7 @@
     "paths": {
       "@common/*": ["src/common/*"],
       "@config": ["src/config"],
+      "@email": ["src/email"],
       "@auth": ["src/auth"],
       "@users": ["src/users"]
     }
