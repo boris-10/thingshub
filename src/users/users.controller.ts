@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '@auth';
 import { CurrentUser } from '@common/decorators';
+import { JwtAuthGuard } from '@auth';
 
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
