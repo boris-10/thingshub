@@ -12,7 +12,7 @@ import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@common/decorators';
 import { User } from '@users';
 
-import { RegisterDto, LoginDto, TokenDto } from './dto';
+import { RegisterDto, LoginDto, TokenDto, ResetPasswordDto } from './dto';
 import { LocalAuthGuard, JwtRefreshGuard, JwtAuthGuard } from './guards';
 import { AuthService } from './auth.service';
 
@@ -42,7 +42,13 @@ export class AuthController {
     return this.authService.logout(user);
   }
 
-  /* TODO: add reset password */
+  @HttpCode(200)
+  @Post('reset-password')
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+  ): Promise<void> {
+    return this.authService.resetPassword(resetPasswordDto);
+  }
 
   @ApiBody({
     schema: {

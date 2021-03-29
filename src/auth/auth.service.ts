@@ -13,7 +13,7 @@ import { jwtConfiguration } from '@config';
 import { PostgresErrorCode } from '@common/constants';
 import { User, UsersService } from '@users';
 
-import { RegisterDto, TokenDto } from './dto';
+import { RegisterDto, ResetPasswordDto, TokenDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -52,6 +52,11 @@ export class AuthService {
   async logout(user: User): Promise<void> {
     const { id } = user;
     await this.usersService.updateById(id, 'refreshToken', null);
+  }
+
+  async resetPassword({ email }: ResetPasswordDto): Promise<void> {
+    await this.usersService.findByEmail(email);
+    /* TODO: send email */
   }
 
   async refreshToken(user: User): Promise<TokenDto> {
