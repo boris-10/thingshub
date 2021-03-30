@@ -43,7 +43,7 @@ export class AuthController {
   }
 
   @HttpCode(200)
-  @Post('reset-password')
+  @Post('password-reset')
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<void> {

@@ -7,14 +7,14 @@ import { EmailModuleOptions } from './interfaces/email-module-options.interface'
 @Global()
 @Module({})
 export class EmailModule {
-  static register(emailModuleOptions: EmailModuleOptions): DynamicModule {
-    const imports = [...emailModuleOptions.imports];
+  static register(options: EmailModuleOptions): DynamicModule {
+    const imports = [...options.imports];
 
     const providers = [
       {
         provide: EMAIL_OPTIONS,
-        useFactory: emailModuleOptions.useFactory,
-        inject: emailModuleOptions.inject,
+        useFactory: options.useFactory,
+        inject: options.inject,
       },
       EmailService,
     ];

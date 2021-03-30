@@ -1,3 +1,4 @@
+import * as path from 'path';
 import {
   BadRequestException,
   ConflictException,
@@ -60,11 +61,13 @@ export class AuthService {
   async resetPassword({ email }: ResetPasswordDto): Promise<void> {
     await this.usersService.findByEmail(email);
     try {
-      await this.emailService.sendEmail({
-        to: email,
-        subject: 'Reset password',
-        text: 'Use this link to reset the password',
-      });
+      await this.emailService.sendEmail(
+        {
+          to: email,
+          subject: 'Reset password',
+        },
+        path.join(__dirname, 'templates/password-reset.hbs'),
+      );
     } catch (error) {
       throw new InternalServerErrorException();
     }
