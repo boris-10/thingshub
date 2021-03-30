@@ -25,6 +25,7 @@ import { AppService } from './app.service';
       load: [appConfiguration, databaseConfiguration, emailConfiguration],
       validationSchema: Joi.object({
         APP_ENV: Joi.string().default(Environment.Development),
+        APP_HOST: Joi.string().default('localhost'),
         APP_NAME: Joi.string().default('ThingsHub'),
         APP_PORT: Joi.string().default(3000),
         DATABASE_HOST: Joi.string().default('localhost'),

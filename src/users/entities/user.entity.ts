@@ -25,6 +25,10 @@ export class User {
   @Column({ nullable: true })
   refreshToken: string;
 
+  @Exclude({ toPlainOnly: true })
+  @Column({ nullable: true })
+  resetToken: string;
+
   @CreateDateColumn()
   createdAt: string;
 

@@ -10,10 +10,11 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
-import { jwtConfiguration } from '@config';
+import { appConfiguration, jwtConfiguration } from '@config';
 import { PostgresErrorCode } from '@common/constants';
-import { User, UsersService } from '@users';
+import { TemplateAdapter } from '@common/adapters';
 import { EmailService } from '@email';
+import { User, UsersService } from '@users';
 
 import { RegisterDto, ResetPasswordDto, AuthorizationDto } from './dto';
 
@@ -23,6 +24,8 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
+    @Inject(appConfiguration.KEY)
+    private readonly appConfig: ConfigType<typeof appConfiguration>,
     @Inject(jwtConfiguration.KEY)
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
   ) {}
@@ -51,16 +54,19 @@ export class AuthService {
     await this.usersService.updateById(id, 'refreshToken', null);
   }
 
-  /* TODO: simplify */
   async resetPassword({ email }: ResetPasswordDto): Promise<void> {
-    await this.usersService.findByEmail(email);
-    await this.emailService.sendEmail(
-      {
-        to: email,
-        subject: 'Reset password',
-      },
-      path.join(__dirname, 'templates/password-reset.hbs'),
-    );
+    const { id } = await this.usersService.findByEmail(email);
+    const resetToken = await this.saveResetToken(id);
+    const resetPasswordUrl = this.buildResetPasswordLink(resetToken);
+    const templatePath = path.join(__dirname, 'templates/password-reset.hbs');
+    const html = await TemplateAdapter.readHtml(templatePath, {
+      resetPasswordUrl,
+    });
+    await this.emailService.send({
+      to: email,
+      subject: 'Reset password',
+      html,
+    });
   }
 
   refreshToken({ id, email }: User): Promise<AuthorizationDto> {
@@ -101,5 +107,21 @@ export class AuthService {
     options?: JwtSignOptions,
   ) {
     return this.jwtService.signAsync({ sub: id, email }, options);
+  }
+
+  private async saveResetToken(id: number): Promise<string> {
+    const resetToken = await this.jwtService.signAsync(
+      {},
+      {
+        expiresIn: '1h',
+      },
+    );
+    await this.usersService.updateById(id, 'resetToken', resetToken);
+
+    return resetToken;
+  }
+
+  private buildResetPasswordLink(resetToken: string): string {
+    return `http://${this.appConfig.host}:${this.appConfig.port}/api/v1/reset-password/${resetToken}`;
   }
 }

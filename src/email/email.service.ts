@@ -20,23 +20,10 @@ export class EmailService {
     });
   }
 
-  async sendEmail(options: SendMailOptions, templatePath: string) {
+  async send(options: SendMailOptions) {
     try {
       const { user: from } = this.emailOptions;
-      const { to: email } = options;
-      const html = await this.readHtmlFile(templatePath, { email });
-      await this.nodemailerTransport.sendMail({ from, html, ...options });
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
-
-  async readHtmlFile<T = any>(filePath: string, context: T): Promise<string> {
-    try {
-      const htmlContent = await fs.readFile(filePath, { encoding: 'utf-8' });
-      const template = handlebars.compile(htmlContent);
-      const html = template(context);
-      return html;
+      await this.nodemailerTransport.sendMail({ from, ...options });
     } catch (error) {
       throw new Error(error);
     }
