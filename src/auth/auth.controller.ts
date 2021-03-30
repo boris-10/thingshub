@@ -12,7 +12,13 @@ import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '@common/decorators';
 import { User } from '@users';
 
-import { RegisterDto, LoginDto, TokenDto, ResetPasswordDto } from './dto';
+import {
+  AuthorizationDto,
+  RegisterDto,
+  LoginDto,
+  ResetPasswordDto,
+  RefreshTokenDto,
+} from './dto';
 import { LocalAuthGuard, JwtRefreshGuard, JwtAuthGuard } from './guards';
 import { AuthService } from './auth.service';
 
@@ -31,7 +37,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @HttpCode(200)
   @Post('login')
-  login(@CurrentUser() user: User): Promise<TokenDto> {
+  login(@CurrentUser() user: User): Promise<AuthorizationDto> {
     return this.authService.login(user);
   }
 
@@ -50,19 +56,11 @@ export class AuthController {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
-  @ApiBody({
-    schema: {
-      properties: {
-        refreshToken: {
-          type: 'string',
-        },
-      },
-    },
-  })
+  @ApiBody({ type: RefreshTokenDto })
   @UseGuards(JwtRefreshGuard)
   @HttpCode(200)
   @Post('refresh-token')
-  async refreshToken(@CurrentUser() user: User): Promise<TokenDto> {
+  async refreshToken(@CurrentUser() user: User): Promise<AuthorizationDto> {
     return this.authService.refreshToken(user);
   }
 }

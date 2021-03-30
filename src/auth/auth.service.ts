@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { hash, compare } from 'bcrypt';
 
 import { jwtConfiguration } from '@config';
@@ -15,7 +15,7 @@ import { PostgresErrorCode } from '@common/constants';
 import { User, UsersService } from '@users';
 import { EmailService } from '@email';
 
-import { RegisterDto, ResetPasswordDto, TokenDto } from './dto';
+import { RegisterDto, ResetPasswordDto, AuthorizationDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -43,13 +43,16 @@ export class AuthService {
     }
   }
 
-  async login(user: User): Promise<TokenDto> {
+  async login(user: User): Promise<AuthorizationDto> {
     const { id, email } = user;
-    const accessToken = await this.createAccessToken(id, email);
-    const refreshToken = await this.createRefreshToken(id, email);
+    const accessToken = await this.createToken(id, email);
+    const refreshToken = await this.createToken(id, email, {
+      secret: this.jwtConfig.refreshTokenSecret,
+      expiresIn: this.jwtConfig.refreshTokenExpirationTime,
+    });
     await this.usersService.updateById(id, 'refreshToken', refreshToken);
 
-    return TokenDto.from({ accessToken, refreshToken });
+    return AuthorizationDto.from({ accessToken, refreshToken });
   }
 
   async logout(user: User): Promise<void> {
@@ -68,13 +71,16 @@ export class AuthService {
     );
   }
 
-  async refreshToken(user: User): Promise<TokenDto> {
+  async refreshToken(user: User): Promise<AuthorizationDto> {
     const { id, email } = user;
-    const accessToken = await this.createAccessToken(id, email);
-    const refreshToken = await this.createRefreshToken(id, email);
+    const accessToken = await this.createToken(id, email);
+    const refreshToken = await this.createToken(id, email, {
+      secret: this.jwtConfig.refreshTokenSecret,
+      expiresIn: this.jwtConfig.refreshTokenExpirationTime,
+    });
     await this.usersService.updateById(id, 'refreshToken', refreshToken);
 
-    return TokenDto.from({ accessToken, refreshToken });
+    return AuthorizationDto.from({ accessToken, refreshToken });
   }
 
   async validateUser(email: string, password: string): Promise<User> {
@@ -88,23 +94,17 @@ export class AuthService {
 
   async validateRefreshToken(refreshToken: string, id: number): Promise<User> {
     const user = await this.usersService.findById(id);
-    if (refreshToken === user.refreshToken) {
-      return user;
+    if (refreshToken !== user.refreshToken) {
+      throw new UnauthorizedException();
     }
-    throw new UnauthorizedException();
+    return user;
   }
 
-  private async createAccessToken(id: number, email: string): Promise<string> {
-    return this.jwtService.signAsync({ sub: id, email });
-  }
-
-  private async createRefreshToken(id: number, email: string): Promise<string> {
-    return this.jwtService.signAsync(
-      { sub: id, email },
-      {
-        secret: this.jwtConfig.refreshTokenSecret,
-        expiresIn: this.jwtConfig.refreshTokenExpirationTime,
-      },
-    );
+  private async createToken(
+    id: number,
+    email: string,
+    options?: JwtSignOptions,
+  ) {
+    return this.jwtService.signAsync({ sub: id, email }, options);
   }
 }
