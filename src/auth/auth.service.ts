@@ -4,7 +4,6 @@ import {
   ConflictException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
@@ -60,17 +59,13 @@ export class AuthService {
 
   async resetPassword({ email }: ResetPasswordDto): Promise<void> {
     await this.usersService.findByEmail(email);
-    try {
-      await this.emailService.sendEmail(
-        {
-          to: email,
-          subject: 'Reset password',
-        },
-        path.join(__dirname, 'templates/password-reset.hbs'),
-      );
-    } catch (error) {
-      throw new InternalServerErrorException();
-    }
+    await this.emailService.sendEmail(
+      {
+        to: email,
+        subject: 'Reset password',
+      },
+      path.join(__dirname, 'templates/password-reset.hbs'),
+    );
   }
 
   async refreshToken(user: User): Promise<TokenDto> {
@@ -83,16 +78,12 @@ export class AuthService {
   }
 
   async validateUser(email: string, password: string): Promise<User> {
-    try {
-      const user = await this.usersService.findByEmail(email);
-      const isPasswordMatching = await compare(password, user.password);
-      if (!isPasswordMatching) {
-        throw new BadRequestException('Wrong credentials provided');
-      }
-      return user;
-    } catch (error) {
+    const user = await this.usersService.findByEmail(email);
+    const isPasswordMatching = await compare(password, user.password);
+    if (!isPasswordMatching) {
       throw new BadRequestException('Wrong credentials provided');
     }
+    return user;
   }
 
   async validateRefreshToken(refreshToken: string, id: number): Promise<User> {

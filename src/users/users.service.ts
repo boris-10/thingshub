@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -17,22 +13,25 @@ export class UsersService {
 
   async findById(id: number): Promise<User> {
     const user = await this.usersRepository.findOne(id);
-    if (user) {
-      return user;
+    if (!user) {
+      throw new NotFoundException('User does not exists');
     }
-    throw new NotFoundException('User does not exists');
+
+    return user;
   }
 
   async findByEmail(email: string): Promise<User> {
     const user = await this.usersRepository.findOne({ email });
-    if (user) {
-      return user;
+    if (!user) {
+      throw new NotFoundException('User with this email does not exists');
     }
-    throw new NotFoundException('User with this email does not exists');
+
+    return user;
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.usersRepository.create(createUserDto);
+
     return this.usersRepository.save(user);
   }
 
@@ -41,11 +40,8 @@ export class UsersService {
     key: K,
     value: V,
   ): Promise<User> {
-    try {
-      await this.usersRepository.update({ id }, { [key]: value });
-      return this.findById(id);
-    } catch (error) {
-      throw new InternalServerErrorException();
-    }
+    await this.usersRepository.update({ id }, { [key]: value });
+
+    return this.findById(id);
   }
 }

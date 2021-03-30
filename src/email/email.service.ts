@@ -23,10 +23,10 @@ export class EmailService {
   async sendEmail(options: SendMailOptions, templatePath: string) {
     try {
       const { user: from } = this.emailOptions;
-      const html = await this.readHtmlFile(templatePath, {});
+      const { to: email } = options;
+      const html = await this.readHtmlFile(templatePath, { email });
       await this.nodemailerTransport.sendMail({ from, html, ...options });
     } catch (error) {
-      console.log(error);
       throw new Error(error);
     }
   }
