@@ -22,9 +22,9 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
     @Inject(jwtConfiguration.KEY)
     private readonly jwtConfig: ConfigType<typeof jwtConfiguration>,
-    private readonly emailService: EmailService,
   ) {}
 
   async register({ email, password }: RegisterDto): Promise<User> {
@@ -43,23 +43,15 @@ export class AuthService {
     }
   }
 
-  async login(user: User): Promise<AuthorizationDto> {
-    const { id, email } = user;
-    const accessToken = await this.createToken(id, email);
-    const refreshToken = await this.createToken(id, email, {
-      secret: this.jwtConfig.refreshTokenSecret,
-      expiresIn: this.jwtConfig.refreshTokenExpirationTime,
-    });
-    await this.usersService.updateById(id, 'refreshToken', refreshToken);
-
-    return AuthorizationDto.from({ accessToken, refreshToken });
+  login({ id, email }: User): Promise<AuthorizationDto> {
+    return this.authorize(id, email);
   }
 
-  async logout(user: User): Promise<void> {
-    const { id } = user;
+  async logout({ id }: User): Promise<void> {
     await this.usersService.updateById(id, 'refreshToken', null);
   }
 
+  /* TODO: simplify */
   async resetPassword({ email }: ResetPasswordDto): Promise<void> {
     await this.usersService.findByEmail(email);
     await this.emailService.sendEmail(
@@ -71,22 +63,14 @@ export class AuthService {
     );
   }
 
-  async refreshToken(user: User): Promise<AuthorizationDto> {
-    const { id, email } = user;
-    const accessToken = await this.createToken(id, email);
-    const refreshToken = await this.createToken(id, email, {
-      secret: this.jwtConfig.refreshTokenSecret,
-      expiresIn: this.jwtConfig.refreshTokenExpirationTime,
-    });
-    await this.usersService.updateById(id, 'refreshToken', refreshToken);
-
-    return AuthorizationDto.from({ accessToken, refreshToken });
+  refreshToken({ id, email }: User): Promise<AuthorizationDto> {
+    return this.authorize(id, email);
   }
 
   async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
-    const isPasswordMatching = await compare(password, user.password);
-    if (!isPasswordMatching) {
+    const isPasswordMatch = await compare(password, user.password);
+    if (!isPasswordMatch) {
       throw new BadRequestException('Wrong credentials provided');
     }
     return user;
@@ -98,6 +82,17 @@ export class AuthService {
       throw new UnauthorizedException();
     }
     return user;
+  }
+
+  private async authorize(id: number, email: string) {
+    const accessToken = await this.createToken(id, email);
+    const refreshToken = await this.createToken(id, email, {
+      secret: this.jwtConfig.refreshTokenSecret,
+      expiresIn: this.jwtConfig.refreshTokenExpirationTime,
+    });
+    await this.usersService.updateById(id, 'refreshToken', refreshToken);
+
+    return AuthorizationDto.from({ accessToken, refreshToken });
   }
 
   private async createToken(

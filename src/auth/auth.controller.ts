@@ -7,7 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '@common/decorators';
 import { User } from '@users';
@@ -41,18 +41,17 @@ export class AuthController {
     return this.authService.login(user);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
   @Post('logout')
-  async logout(@CurrentUser() user: User): Promise<void> {
+  logout(@CurrentUser() user: User): Promise<void> {
     return this.authService.logout(user);
   }
 
   @HttpCode(200)
-  @Post('password-reset')
-  async resetPassword(
-    @Body() resetPasswordDto: ResetPasswordDto,
-  ): Promise<void> {
+  @Post('reset-password')
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<void> {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
@@ -60,7 +59,7 @@ export class AuthController {
   @UseGuards(JwtRefreshGuard)
   @HttpCode(200)
   @Post('refresh-token')
-  async refreshToken(@CurrentUser() user: User): Promise<AuthorizationDto> {
+  refreshToken(@CurrentUser() user: User): Promise<AuthorizationDto> {
     return this.authService.refreshToken(user);
   }
 }
