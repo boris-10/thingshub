@@ -3,8 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import * as Joi from 'joi';
 
-import { appConfiguration, databaseConfiguration } from '@config';
+import {
+  appConfiguration,
+  databaseConfiguration,
+  emailConfiguration,
+} from '@config';
 import { Environment } from '@common/constants';
+import { EmailModule } from '@email';
 import { AuthModule } from '@auth';
 import { UsersModule } from '@users';
 
@@ -17,7 +22,7 @@ import { AppService } from './app.service';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: [appConfiguration, databaseConfiguration],
+      load: [appConfiguration, databaseConfiguration, emailConfiguration],
       validationSchema: Joi.object({
         APP_ENV: Joi.string().default(Environment.Development),
         APP_NAME: Joi.string().default('ThingsHub'),
@@ -49,6 +54,16 @@ import { AppService } from './app.service';
         password: database.password,
         autoLoadEntities: true,
         synchronize: true, // 👈 your entities will be synced with the database (ORM will map entity definitions to corresponding SQL tabled), every time you run the application (recommended: disable in the production)
+      }),
+    }),
+    // ---- Email ----
+    EmailModule.register({
+      imports: [ConfigModule],
+      inject: [emailConfiguration.KEY],
+      useFactory: (email: ConfigType<typeof emailConfiguration>) => ({
+        service: email.service,
+        user: email.user,
+        password: email.password,
       }),
     }),
     AuthModule,

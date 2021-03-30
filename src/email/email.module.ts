@@ -1,25 +1,28 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Global, Module } from '@nestjs/common';
 
 import { EMAIL_OPTIONS } from './constants';
 import { EmailService } from './email.service';
 import { EmailModuleOptions } from './interfaces/email-module-options.interface';
 
+@Global()
 @Module({})
 export class EmailModule {
-  static forFeature(emailModuleOptions: EmailModuleOptions): DynamicModule {
-    const { imports, useFactory, inject } = emailModuleOptions;
+  static register(emailModuleOptions: EmailModuleOptions): DynamicModule {
+    const imports = [...emailModuleOptions.imports];
+
+    const providers = [
+      {
+        provide: EMAIL_OPTIONS,
+        useFactory: emailModuleOptions.useFactory,
+        inject: emailModuleOptions.inject,
+      },
+      EmailService,
+    ];
 
     return {
       module: EmailModule,
       imports: [...imports],
-      providers: [
-        {
-          provide: EMAIL_OPTIONS,
-          useFactory: useFactory,
-          inject: [...inject],
-        },
-        EmailService,
-      ],
+      providers: [...providers],
       exports: [EmailService],
     };
   }
