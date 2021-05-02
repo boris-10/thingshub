@@ -1,7 +1,5 @@
-import * as fs from 'fs/promises';
 import { Inject, Injectable } from '@nestjs/common';
 import { createTransport, Transporter, SendMailOptions } from 'nodemailer';
-import * as handlebars from 'handlebars';
 
 import { EMAIL_OPTIONS } from './constants';
 import { EmailOptions } from './interfaces/email-options.interface';
