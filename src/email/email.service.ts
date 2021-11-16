@@ -19,11 +19,7 @@ export class EmailService {
   }
 
   async send(options: SendMailOptions) {
-    try {
-      const { user: from } = this.emailOptions;
-      await this.nodemailerTransport.sendMail({ from, ...options });
-    } catch (error) {
-      throw new Error(error);
-    }
+    const { user: from } = this.emailOptions;
+    await this.nodemailerTransport.sendMail({ from, ...options });
   }
 }
